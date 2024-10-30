@@ -17,6 +17,14 @@ def get_details_string(path, details, state):
         output += path
     return output
 
+def add_to_total(total, details):
+    total["lines"] += details["lines"]
+    total["words"] += details["words"]
+    total["bytes"] += details["bytes"]
+    total["chars"] += details["chars"]
+    if total["max_length"] < details["max_length"]:
+        total["max_length"] = details["max_length"]
+
 def get_file_details(file_path):
     details = {
         "lines": 0,
@@ -94,7 +102,15 @@ def main():
     parser.add_argument("-L", "--max-line-length", action="store_true", help="print the maximum display width")
     # parse the arguments
     args = parser.parse_args()
+
     program_state = get_program_state(args)
+    total_details = details = {
+        "lines": 0,
+        "words": 0,
+        "bytes": 0,
+        "chars": 0,
+        "max_length": 0
+    }
     for path in args.FILE:
         path_state = get_path_state(path)
         if path_state == 0:
@@ -103,7 +119,12 @@ def main():
             print(f"{file} is a directory")
         else:
             file_details = get_file_details(path)
+            if len(args.FILE) > 1:
+                add_to_total(total_details, file_details)
             detail_string = get_details_string(path, file_details, program_state)
             print(detail_string)
+    if len(args.FILE) > 1:
+            total_string = get_details_string("total", total_details, program_state)
+            print(total_string)
 
 main()
