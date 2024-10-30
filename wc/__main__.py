@@ -11,6 +11,8 @@ def get_details_string(path, details, state):
         output += f'{details["bytes"]:3} '
     if state & 8:
         output += f'{details["chars"]:3} '
+    if state & 16:
+        output += f'{details["max_length"]:3} '
     if path:
         output += path
     return output
@@ -21,10 +23,12 @@ def get_file_details(file_path):
         "words": 0,
         "bytes": getsize(file_path),
         "chars": 0,
+        "max_length": 0
     }
     fh = open(file_path)
     is_in_word = False
     for line in fh:
+        length = 0
         for char in line:
             details["chars"] += 1
             if not char.isspace():
@@ -34,6 +38,10 @@ def get_file_details(file_path):
                 details["words"] += 1
             if char == "\n":
                 details["lines"] += 1
+            else:
+                length += 1
+        if length > details["max_length"]:
+            details["max_length"] = length
     fh.close()
     return details
 
@@ -44,6 +52,7 @@ def get_program_state(args):
     2 => words
     4 => bytes
     8 => chars
+    16 => max-length
     """
     state = 0
     if args.lines:
@@ -54,6 +63,8 @@ def get_program_state(args):
         state |= 4
     if args.chars:
         state |= 8
+    if args.max_line_length:
+        state |= 16
     return state
 
 def get_path_state(file_path):
@@ -80,6 +91,7 @@ def main():
     parser.add_argument("-w", "--words", action="store_true", help="print the word counts")
     parser.add_argument("-c", "--bytes", action="store_true", help="print the byte counts")
     parser.add_argument("-m", "--chars", action="store_true", help="print the character counts")
+    parser.add_argument("-L", "--max-line-length", action="store_true", help="print the maximum display width")
     # parse the arguments
     args = parser.parse_args()
     program_state = get_program_state(args)
