@@ -17,6 +17,35 @@ def get_details_string(path, details, state):
         output += path
     return output
 
+def get_stdin_details():
+    from sys import stdin
+    details = {
+        "lines": 0,
+        "words": 0,
+        "bytes": 0,
+        "chars": 0,
+        "max_length": 0
+    }
+    is_in_word = False
+    for line in stdin:
+        length = 0
+        for char in line:
+            details["chars"] += 1
+            if not char.isspace():
+                is_in_word = True
+            elif is_in_word:
+                is_in_word = False
+                details["words"] += 1
+            if char == "\n":
+                details["lines"] += 1
+            else:
+                length += 1
+        if is_in_word:
+            details["words"] += 1
+        if length > details["max_length"]:
+            details["max_length"] = length
+    return details
+
 def add_to_total(total, details):
     total["lines"] += details["lines"]
     total["words"] += details["words"]
@@ -48,6 +77,8 @@ def get_file_details(file_path):
                 details["lines"] += 1
             else:
                 length += 1
+        if is_in_word:
+            details["words"] += 1
         if length > details["max_length"]:
             details["max_length"] = length
     fh.close()
@@ -112,6 +143,13 @@ def main():
         "max_length": 0
     }
     for path in args.FILE:
+        if path == "-":
+            stdin_details = get_stdin_details()
+            detail_string = get_details_string(path, stdin_details, program_state)
+            print(f"\n{detail_string}")
+            if len(args.FILE) > 1:
+                add_to_total(total_details, stdin_details)
+            continue
         path_state = get_path_state(path)
         if path_state == 0:
             print(f"no such file or directory: {file}")
