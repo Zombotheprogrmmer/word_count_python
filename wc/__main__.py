@@ -1,5 +1,5 @@
 import argparse
-from os.path import isfile, exists
+from os.path import isfile, exists, getsize
 
 def get_details_string(path, details, state):
     output = ""
@@ -7,6 +7,8 @@ def get_details_string(path, details, state):
         output += f'{details["lines"]:3} '
     if state & 2:
         output += f'{details["words"]:3} '
+    if state & 4:
+        output += f'{details["bytes"]:3} '
     if path:
         output += path
     return output
@@ -15,6 +17,7 @@ def get_file_details(file_path):
     details = {
         "lines": 0,
         "words": 0,
+        "bytes": getsize(file_path),
     }
     fh = open(file_path)
     is_in_word = False
@@ -35,12 +38,15 @@ def get_program_state(args):
     additive state calculator
     1 => lines
     2 => words
+    4 => bytes
     """
     state = 0
     if args.lines:
         state |= 1
     if args.words:
         state |= 2
+    if args.bytes:
+        state |= 4
     return state
 
 def get_path_state(file_path):
@@ -57,10 +63,15 @@ def get_path_state(file_path):
 
 def main():
     # create the command line argument parser and add arguments
-    parser = argparse.ArgumentParser(description="a recreation of the Unix wc program by Zombotheprogrmmer. Print newline, word, and byte counts for each FILE, and a total line if more than one FILE is specified. A word is a non-zero-length sequence of printable characters delimited by white space.")
+    parser = argparse.ArgumentParser(
+        description="""a recreation of the Unix wc program by Zombotheprogrmmer. 
+        Print newline, word, and byte counts for each FILE, and a total line if more than one FILE is specified. 
+        A word is a non-zero-length sequence of printable characters delimited by white space."""
+    )
     parser.add_argument("FILE", type=str, nargs="*", help="The adress of file(s) to be proccessed. With no FILE, or when FILE is -, read standard input.")
     parser.add_argument("-l", "--lines", action="store_true", help="print the newline counts")
     parser.add_argument("-w", "--words", action="store_true", help="print the word counts")
+    parser.add_argument("-c", "--bytes", action="store_true", help="print the byte counts")
     # parse the arguments
     args = parser.parse_args()
     program_state = get_program_state(args)
