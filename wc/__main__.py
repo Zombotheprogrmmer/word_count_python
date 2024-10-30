@@ -9,6 +9,8 @@ def get_details_string(path, details, state):
         output += f'{details["words"]:3} '
     if state & 4:
         output += f'{details["bytes"]:3} '
+    if state & 8:
+        output += f'{details["chars"]:3} '
     if path:
         output += path
     return output
@@ -18,11 +20,13 @@ def get_file_details(file_path):
         "lines": 0,
         "words": 0,
         "bytes": getsize(file_path),
+        "chars": 0,
     }
     fh = open(file_path)
     is_in_word = False
     for line in fh:
         for char in line:
+            details["chars"] += 1
             if not char.isspace():
                 is_in_word = True
             elif is_in_word:
@@ -39,6 +43,7 @@ def get_program_state(args):
     1 => lines
     2 => words
     4 => bytes
+    8 => chars
     """
     state = 0
     if args.lines:
@@ -47,6 +52,8 @@ def get_program_state(args):
         state |= 2
     if args.bytes:
         state |= 4
+    if args.chars:
+        state |= 8
     return state
 
 def get_path_state(file_path):
@@ -72,6 +79,7 @@ def main():
     parser.add_argument("-l", "--lines", action="store_true", help="print the newline counts")
     parser.add_argument("-w", "--words", action="store_true", help="print the word counts")
     parser.add_argument("-c", "--bytes", action="store_true", help="print the byte counts")
+    parser.add_argument("-m", "--chars", action="store_true", help="print the character counts")
     # parse the arguments
     args = parser.parse_args()
     program_state = get_program_state(args)
