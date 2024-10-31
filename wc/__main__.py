@@ -104,7 +104,8 @@ def get_program_state(args):
         state |= 8
     if args.max_line_length:
         state |= 16
-    return state
+    # if no flag is passed return 7
+    return state if state else 7
 
 def get_path_state(file_path):
     """
