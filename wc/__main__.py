@@ -143,6 +143,13 @@ def main():
         "chars": 0,
         "max_length": 0
     }
+    # no FILE provided
+    if len(args.FILE) == 0:
+        stdin_details = get_stdin_details()
+        detail_string = get_details_string("", stdin_details, program_state)
+        print(f"\n{detail_string}")
+        quit(0)
+    # FILE provided
     for path in args.FILE:
         if path == "-":
             stdin_details = get_stdin_details()
